@@ -12,11 +12,13 @@ repositories {
 dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.24'
     annotationProcessor 'org.projectlombok:lombok:1.18.24'
-
+    testImplementation 'org.projectlombok:lombok:1.18.24'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.24'
     implementation("io.projectreactor:reactor-core:3.4.0")
 
     //log - logback
     implementation("ch.qos.logback:logback-classic:1.2.3")
+    testImplementation("ch.qos.logback:logback-classic:1.2.3")
 
     //reactor-debug-agent
     implementation('io.projectreactor:reactor-tools:3.4.0')

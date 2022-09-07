@@ -5,13 +5,14 @@ import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class MovieReactiveServiceTest {
     private MovieReactiveService movieReactiveService;
 
     @BeforeEach
     void beforeEach() {
-        this.movieReactiveService = new MovieReactiveService(new MovieInfoService(), new ReviewService());
+        this.movieReactiveService = new MovieReactiveService(new MovieInfoService(), new ReviewService(), new RevenueService());
     }
 
     @Test
@@ -37,6 +38,17 @@ class MovieReactiveServiceTest {
                 .assertNext(m -> {
                     assertEquals(10L, m.getMovie().getMovieInfoId());
                     assertEquals(2, m.getReviewList().size());
+                }).verifyComplete();
+    }
+
+    @Test
+    void getMovieByIdWithRevenue() {
+        var movie = movieReactiveService.getMovieByIdWithRevenue(10L);
+        StepVerifier.create(movie)
+                .assertNext(m -> {
+                    assertEquals(10L, m.getMovie().getMovieInfoId());
+                    assertEquals(2, m.getReviewList().size());
+                    assertNotNull(m.getRevenue());
                 }).verifyComplete();
     }
 }

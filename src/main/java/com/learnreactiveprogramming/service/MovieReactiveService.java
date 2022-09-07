@@ -7,6 +7,7 @@ import com.learnreactiveprogramming.exception.MovieException;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import reactor.util.retry.Retry;
 
 import java.time.Duration;
@@ -18,11 +19,14 @@ public class MovieReactiveService {
 
     private final MovieInfoService movieInfoService;
     private final ReviewService reviewService;
+    private final RevenueService revenueService;
 
-    public MovieReactiveService(MovieInfoService movieInfoService, ReviewService reviewService) {
+    public MovieReactiveService(MovieInfoService movieInfoService, ReviewService reviewService, RevenueService revenueService) {
         this.movieInfoService = movieInfoService;
         this.reviewService = reviewService;
+        this.revenueService = revenueService;
     }
+
 
     public Flux<Movie> getAllMovies() {
         Flux<MovieInfo> moviesInfo = this.movieInfoService.retrieveMoviesFlux();
@@ -85,4 +89,11 @@ public class MovieReactiveService {
         return movie.zipWith(reviews).map(t2 -> new Movie(t2.getT1(), t2.getT2()));
     }
 
+    public Mono<Movie> getMovieByIdWithRevenue(long movieId) {
+        var movie = this.movieInfoService.retrieveMovieInfoMonoUsingId(movieId).log();
+        var reviews = reviewService.retrieveReviewsFlux(movieId).collectList().log();
+        var revenue = Mono.fromCallable(() -> revenueService.getRevenue(movieId)).subscribeOn(Schedulers.boundedElastic()).log();
+
+        return Mono.zip(movie, reviews, revenue).map(t3 -> new Movie(t3.getT1(), t3.getT2(), t3.getT3()));
+    }
 }
